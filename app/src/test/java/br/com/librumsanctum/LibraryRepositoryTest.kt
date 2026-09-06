@@ -37,6 +37,13 @@ class LibraryRepositoryTest {
         assertEquals(setOf(a, b), reopened.books().toSet())
         assertEquals(ReadingSettings("Escuro", 26f, false), reopened.settings())
     }
+    @Test fun recoversAtomicBackupAfterInterruptedIndexWrite() {
+        val book = Book("a", "Preservado", "Autor", "EPUB", 10, 0, position = 4)
+        repository.save(book)
+        val index = File(context.filesDir, "library/index.json")
+        assertTrue(index.renameTo(File(context.filesDir, "library/index.json.bak")))
+        assertEquals(listOf(book), LibraryRepository(context).books())
+    }
     private fun pdf(text: Boolean): File = File(context.cacheDir, "sample.pdf").apply {
         PDDocument().use { document ->
             val page = PDPage(); document.addPage(page)

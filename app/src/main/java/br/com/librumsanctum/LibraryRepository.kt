@@ -17,7 +17,7 @@ class LibraryRepository(private val context: Context) {
     private val preferences = context.getSharedPreferences("reader", Context.MODE_PRIVATE)
     fun source(book: Book) = File(root, "${book.id}.${book.format.lowercase()}")
     @Synchronized fun books(): List<Book> {
-        if (!index.baseFile.exists()) return emptyList()
+        if (!index.baseFile.exists() && !File(root, "index.json.bak").exists()) return emptyList()
         val array = JSONArray(index.openRead().bufferedReader().use { it.readText() })
         return (0 until array.length()).map { i -> array.getJSONObject(i).let {
             Book(it.getString("id"), it.getString("title"), it.getString("author"), it.getString("format"),

@@ -2,8 +2,8 @@ package br.com.librumsanctum
 
 import android.app.Application
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.activity.ComponentActivity
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Before
 import org.junit.Rule
@@ -18,11 +18,12 @@ import java.io.File
 @Config(sdk = [28], qualifiers = "w411dp-h891dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class LibraryUiTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
     private lateinit var application: Application
     @Before fun setup() {
         application = ApplicationProvider.getApplicationContext()
         File(application.filesDir, "library").deleteRecursively()
+        application.getSharedPreferences("reader", android.content.Context.MODE_PRIVATE).edit().clear().commit()
     }
     @Test fun emptyLibraryOffersImport() {
         val model = LibraryViewModel(application)
@@ -38,8 +39,10 @@ class LibraryUiTest {
         val model = LibraryViewModel(application)
         compose.setContent { LibrumApp(model) }
         compose.waitUntil(10_000) { model.state.value.books.isNotEmpty() && !model.state.value.busy }
-        compose.onAllNodesWithText("Um livro de teste")[0].performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("book-fixture").performClick()
         compose.waitUntil(10_000) {
+            org.robolectric.shadows.ShadowLooper.idleMainLooper()
             check(model.state.value.error == null) { model.state.value.error!! }
             model.state.value.selected != null && !model.state.value.busy
         }
@@ -56,6 +59,12 @@ class LibraryUiTest {
     }
     private fun screenshot(name: String) {
         val file = File("build/outputs/screenshots/$name.png").apply { parentFile!!.mkdirs() }
-        file.outputStream().use { compose.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        compose.runOnIdle {
+            val view = compose.activity.window.decorView
+            val bitmap = android.graphics.Bitmap.createBitmap(view.width, view.height, android.graphics.Bitmap.Config.ARGB_8888)
+            view.draw(android.graphics.Canvas(bitmap))
+            file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            bitmap.recycle()
+        }
     }
 }

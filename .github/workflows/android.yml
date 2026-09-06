@@ -1,5 +1,12 @@
 name: Android
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -26,3 +33,4 @@ jobs:
           path: |
             app/build/reports/tests/
             app/build/reports/lint-results-debug.html
+            app/build/outputs/screenshots/

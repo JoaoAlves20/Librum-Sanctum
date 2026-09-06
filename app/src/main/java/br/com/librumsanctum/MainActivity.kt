@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,9 +45,9 @@ class MainActivity : ComponentActivity() {
 @Composable fun LibrumApp(model: LibraryViewModel = viewModel()) {
     val state by model.state.collectAsStateWithLifecycle()
     val colors = when (state.settings.theme) {
-        "Escuro" -> darkColorScheme(primary = Color(0xFFD9BB7A), background = Color(0xFF171E1B), surface = Color(0xFF202A25), onSurface = Color(0xFFE9E4D8))
-        "Claro" -> lightColorScheme(primary = Color(0xFF315848), background = Color(0xFFFAFBF8), surface = Color.White)
-        else -> lightColorScheme(primary = Color(0xFF315848), background = Color(0xFFF4EDDE), surface = Color(0xFFECE2CF), onSurface = Color(0xFF302D25))
+        "Escuro" -> darkColorScheme(primary = Color(0xFFD9BB7A), background = Color(0xFF171E1B), surface = Color(0xFF202A25), onSurface = Color(0xFFE9E4D8), onBackground = Color(0xFFE9E4D8), secondaryContainer = Color(0xFF334D42), onSecondaryContainer = Color(0xFFE9E4D8))
+        "Claro" -> lightColorScheme(primary = Color(0xFF315848), background = Color(0xFFFAFBF8), surface = Color.White, secondaryContainer = Color(0xFFDFE9DF), onSecondaryContainer = Color(0xFF243F36))
+        else -> lightColorScheme(primary = Color(0xFF315848), background = Color(0xFFF4EDDE), surface = Color(0xFFECE2CF), onSurface = Color(0xFF302D25), secondaryContainer = Color(0xFFE0D4BC), onSecondaryContainer = Color(0xFF243F36))
     }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { it?.let(model::import) }
     MaterialTheme(colorScheme = colors) {
@@ -108,7 +109,7 @@ class MainActivity : ComponentActivity() {
 @Composable private fun BookCard(book: Book, onClick: () -> Unit) {
     val palette = listOf(Color(0xFF315848), Color(0xFF794D3C), Color(0xFF46536B), Color(0xFF705E3C))
     val color = palette[(book.id.hashCode() and Int.MAX_VALUE) % palette.size]
-    Column(Modifier.clickable(onClick = onClick)) {
+    Column(Modifier.testTag("book-${book.id}").clickable(onClick = onClick)) {
         Surface(color = color, contentColor = Color(0xFFF4EDDE), shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp), shadowElevation = 4.dp) {
             Row(Modifier.fillMaxWidth().height(195.dp)) {
                 Box(Modifier.width(9.dp).fillMaxHeight().background(Color.Black.copy(alpha = .18f)))
