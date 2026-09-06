@@ -43,7 +43,7 @@ object EpubParser {
             if (blocks.isEmpty()) splitPassages(doc.body().text()) else blocks.flatMap { splitPassages(it.text()) }
         }
         require(passages.isNotEmpty()) { "Nenhum texto legível encontrado no EPUB." }
-        ParsedBook(opf.getElementsByTag("dc:title").text().ifBlank { file.nameWithoutExtension },
+        ParsedBook(opf.getElementsByTag("dc:title").text(),
             opf.getElementsByTag("dc:creator").text().ifBlank { "Autor desconhecido" }, passages, 0)
     }
 }

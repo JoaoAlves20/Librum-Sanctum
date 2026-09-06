@@ -74,7 +74,7 @@ class LibraryRepository(private val context: Context) {
                 ParsedBook(pdf.documentInformation.title.orEmpty().ifBlank { name.substringBeforeLast('.') },
                     pdf.documentInformation.author.orEmpty().ifBlank { "Autor desconhecido" }, text, pdf.numberOfPages)
             }
-            val book = Book(id, parsed.title, parsed.author, format, parsed.passages.size, parsed.pages, original = parsed.passages.isEmpty())
+            val book = Book(id, parsed.title.ifBlank { name.substringBeforeLast('.') }, parsed.author, format, parsed.passages.size, parsed.pages, original = parsed.passages.isEmpty())
             temp.copyTo(source(book), overwrite = true)
             File(root, "$id.json").writeText(JSONArray().apply { parsed.passages.forEach { put(JSONObject().put("text", it.text).put("page", it.sourcePage)) } }.toString())
             save(book)
