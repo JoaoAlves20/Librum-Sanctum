@@ -1,4 +1,20 @@
-# Validação da versão 0.1.0
+# Validação da versão 0.2.0
+
+Executada em 7 de setembro de 2026, com o mesmo ambiente Android/JDK descrito abaixo.
+
+- **24 testes aprovados**, sem falhas ou testes ignorados: 6 de EPUB, 7 do repositório, 4 de interface, 6 do algoritmo de paginação e 1 de medidas reais de texto.
+- O teste de medidas cobre 12 combinações de tamanho de fonte, largura e altura, com escala de fonte do sistema ampliada. Verifica que todo caractere permanece no resultado e que os fragmentos cabem na página sem overflow.
+- Os testes de interface executam deslizes para os dois lados, avanço por botão, troca entre rolagem e páginas, reabertura, mudança de fonte, primeira/última página e conclusão do livro. Conferem a preservação da posição dentro do trecho.
+- Os testes de armazenamento verificam a preferência por páginas, posições independentes de dois livros e leitura do índice antigo sem o novo campo de deslocamento.
+- `testDebugUnitTest lintDebug assembleDebug --continue`: **BUILD SUCCESSFUL**. Lint: 0 erros e 10 avisos de dependências/sugestões de API.
+- Capturas `reader-paged.png` e `reader-paged-large-font.png` foram geradas e inspecionadas visualmente, além das capturas anteriores.
+- APK confirmado com `versionCode=2`, `versionName=0.2.0` e a mesma assinatura SHA-256 do APK local 0.1.0. Pode atualizar essa instalação sem desinstalar.
+
+A primeira tentativa foi interrompida por dois diretórios temporários de build que o Windows não conseguiu remover. Após limpar somente esses temporários, a execução completa passou. Não foi necessário alterar arquivos da biblioteca do usuário.
+
+Os testes gráficos continuam sendo executados em Android simulado por Robolectric (API 28); não equivalem a uma instalação e teste em aparelho físico. O novo modo paginado se aplica ao texto de EPUBs e PDFs extraídos; o visualizador do PDF original mantém seus controles próprios.
+
+## Histórico: versão 0.1.0
 
 Executada em 6 de setembro de 2026, com JDK 17, Gradle 8.11.1, Android SDK 35 e Windows.
 
