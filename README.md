@@ -2,11 +2,12 @@
 
 Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, servidor, anúncios ou permissão de internet.
 
-## Primeira versão
+## Versão 0.2.0
 
 - Importa PDF e EPUB pelo seletor de arquivos e mantém uma cópia privada no aparelho.
 - Estante com busca, capas tipográficas, último livro aberto, percentual e botão de continuar.
 - Leitura de texto extraído com fonte clássica ou sem serifa, tamanho ajustável e temas claro, sépia e escuro.
+- Duas formas de leitura em **Aa → Forma de leitura**: rolagem vertical ou páginas com deslize horizontal, botões e contador.
 - PDF original renderizado no aparelho, com páginas, zoom e arraste.
 - Posição independente por livro, preferências persistidas e identificação de duplicatas pelo conteúdo.
 - EPUB segue a ordem de leitura do `spine`, não a ordem dos arquivos no ZIP.
@@ -25,7 +26,9 @@ No Windows, use `gradlew.bat`. O APK de desenvolvimento será gerado em `app/bui
 
 Kotlin e Jetpack Compose para a interface; `LibraryViewModel` coordena estado e tarefas de disco; `LibraryRepository` mantém os arquivos e um índice JSON com escrita atômica. PDFBox Android extrai texto, `PdfRenderer` exibe o original, e Jsoup interpreta o conteúdo EPUB. Não há serviços externos em tempo de execução.
 
-O texto é dividido em trechos de até 65 palavras. A retomada usa o primeiro trecho visível, portanto mudar fonte ou tamanho não invalida a posição. Ao reabrir, o início desse trecho aparece no topo (não o pixel exato). O percentual acompanha os trechos ou páginas ultrapassados; o botão de conclusão registra 100%. Alternar entre texto e PDF aproxima a posição pela página de origem.
+O texto importado é dividido em trechos de até 65 palavras. A retomada guarda o trecho e a posição do caractere visível, sem depender do número de uma página. Em rolagem, o leitor retoma a linha que contém esse ponto; no modo paginado, abre a página que o contém. Alterar fonte, tela ou modo recalcula a disposição e preserva essa referência. As páginas são medidas com a mesma fonte e largura usadas para exibir o texto, com divisão de trechos longos entre páginas. O percentual acompanha os trechos ou páginas originais ultrapassados; o botão de conclusão registra 100%. Alternar entre texto e PDF original aproxima a posição pela página de origem.
+
+O modo escolhido fica salvo no aparelho. A biblioteca da versão 0.1.0 é compatível: livros antigos começam com deslocamento zero dentro do trecho já salvo. Para atualizar, instale o novo APK por cima do anterior, usando a mesma assinatura; não desinstale o app.
 
 ## Limites conhecidos
 
@@ -47,5 +50,8 @@ O texto é dividido em trechos de até 65 palavras. A retomada usa o primeiro tr
 6. Reimporte o mesmo arquivo: não deve duplicar nem perder progresso.
 7. Selecione um arquivo inválido: deve mostrar erro e preservar a biblioteca.
 8. Use fonte do sistema ampliada e TalkBack para conferir navegação e legibilidade.
+9. Em **Aa → Forma de leitura → Páginas**, deslize para os dois lados e use os botões. Confira a primeira e a última página.
+10. Avance, troque para **Rolagem** e volte a **Páginas**. Feche e reabra o livro: o mesmo ponto deve continuar acessível.
+11. No modo paginado, aumente a fonte e gire o aparelho. O número de páginas pode mudar, mas nenhum texto deve desaparecer ou ser cortado.
 
 Os testes JVM incluem extração de PDF real, leitura de EPUB, rejeição de arquivos inválidos, duplicatas e persistência. Consulte `VALIDATION.md` para o que efetivamente foi executado nesta implementação.

@@ -22,7 +22,7 @@ class LibraryRepository(private val context: Context) {
         return (0 until array.length()).map { i -> array.getJSONObject(i).let {
             Book(it.getString("id"), it.getString("title"), it.getString("author"), it.getString("format"),
                 it.getInt("passages"), it.getInt("pages"), it.optInt("position"), it.optInt("pdfPage"),
-                it.optBoolean("original"), it.optLong("lastRead"), it.optBoolean("finished"))
+                it.optBoolean("original"), it.optLong("lastRead"), it.optBoolean("finished"), it.optInt("positionOffset"))
         } }
     }
     @Synchronized fun save(book: Book) {
@@ -32,6 +32,7 @@ class LibraryRepository(private val context: Context) {
             put("id", b.id); put("title", b.title); put("author", b.author); put("format", b.format)
             put("passages", b.passages); put("pages", b.pages); put("position", b.position)
             put("pdfPage", b.pdfPage); put("original", b.original); put("lastRead", b.lastRead); put("finished", b.finished)
+            put("positionOffset", b.positionOffset)
         }) }
         val stream = index.startWrite()
         try { stream.write(array.toString().toByteArray()); index.finishWrite(stream) }
@@ -41,8 +42,14 @@ class LibraryRepository(private val context: Context) {
         val array = JSONArray(File(root, "${book.id}.json").readText())
         return (0 until array.length()).map { array.getJSONObject(it).let { p -> Passage(p.getString("text"), p.getInt("page")) } }
     }
-    fun settings() = ReadingSettings(preferences.getString("theme", "Sépia")!!, preferences.getFloat("size", 20f), preferences.getBoolean("serif", true))
-    fun saveSettings(value: ReadingSettings) { preferences.edit().putString("theme", value.theme).putFloat("size", value.size).putBoolean("serif", value.serif).apply() }
+    fun settings() = ReadingSettings(
+        preferences.getString("theme", "Sépia")!!, preferences.getFloat("size", 20f), preferences.getBoolean("serif", true),
+        ReadingMode.entries.firstOrNull { it.name == preferences.getString("mode", null) } ?: ReadingMode.SCROLL,
+    )
+    fun saveSettings(value: ReadingSettings) {
+        preferences.edit().putString("theme", value.theme).putFloat("size", value.size)
+            .putBoolean("serif", value.serif).putString("mode", value.mode.name).apply()
+    }
     fun import(uri: Uri): Book {
         val name = context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
             if (it.moveToFirst()) it.getString(0) else null

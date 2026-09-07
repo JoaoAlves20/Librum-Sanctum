@@ -47,10 +47,13 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         repository.saveSettings(value)
         mutable.value = mutable.value.copy(settings = value)
     }
-    fun position(position: Int) {
+    fun position(position: Int, offset: Int = 0) {
         val book = mutable.value.selected ?: return
         val updated = if (book.original) book.copy(pdfPage = position.coerceIn(0, (book.pages - 1).coerceAtLeast(0)), finished = false)
-            else book.copy(position = position.coerceIn(0, (book.passages - 1).coerceAtLeast(0)), finished = false)
+            else {
+                val index = position.coerceIn(0, (book.passages - 1).coerceAtLeast(0))
+                book.copy(position = index, positionOffset = offset.coerceIn(0, mutable.value.passages.getOrNull(index)?.text?.length ?: 0), finished = false)
+            }
         if (updated != book) update(updated)
     }
     fun finish() { mutable.value.selected?.let { update(it.copy(finished = true)) } }
@@ -58,7 +61,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         val book = mutable.value.selected ?: return
         if (book.format != "PDF" || book.passages == 0) return
         val passages = mutable.value.passages
-        val updated = if (book.original) book.copy(original = false, position = passages.indexOfFirst { it.sourcePage >= book.pdfPage }.let { if (it < 0) passages.lastIndex else it })
+        val updated = if (book.original) book.copy(original = false, positionOffset = 0, position = passages.indexOfFirst { it.sourcePage >= book.pdfPage }.let { if (it < 0) passages.lastIndex else it })
             else book.copy(original = true, pdfPage = passages.getOrNull(book.position)?.sourcePage ?: 0)
         update(updated)
     }

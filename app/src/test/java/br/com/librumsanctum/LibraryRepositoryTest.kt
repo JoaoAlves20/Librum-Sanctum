@@ -44,6 +44,22 @@ class LibraryRepositoryTest {
         assertTrue(index.renameTo(File(context.filesDir, "library/index.json.bak")))
         assertEquals(listOf(book), LibraryRepository(context).books())
     }
+    @Test fun persistsPagedModeAndCharacterAnchorWithoutChangingOtherBooks() {
+        val first = Book("a", "Primeiro", "Autor", "EPUB", 80, 0, position = 20, positionOffset = 140)
+        val second = Book("b", "Segundo", "Autor", "EPUB", 90, 0, position = 8, positionOffset = 22)
+        repository.save(first); repository.save(second)
+        repository.saveSettings(ReadingSettings(mode = ReadingMode.PAGED))
+        val reopened = LibraryRepository(context)
+        assertEquals(setOf(first, second), reopened.books().toSet())
+        assertEquals(ReadingMode.PAGED, reopened.settings().mode)
+    }
+    @Test fun oldLibraryAndPreferencesRemainCompatible() {
+        File(context.filesDir, "library/index.json").writeText("""[{"id":"legacy","title":"Antigo","author":"Autor","format":"EPUB","passages":90,"pages":0,"position":20}]""")
+        val book = repository.books().single()
+        assertEquals(20, book.position)
+        assertEquals(0, book.positionOffset)
+        assertEquals(ReadingMode.SCROLL, repository.settings().mode)
+    }
     private fun pdf(text: Boolean): File = File(context.cacheDir, "sample.pdf").apply {
         PDDocument().use { document ->
             val page = PDPage(); document.addPage(page)

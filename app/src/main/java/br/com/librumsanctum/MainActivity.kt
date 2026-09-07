@@ -10,12 +10,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,22 +137,7 @@ class MainActivity : ComponentActivity() {
         }
         HorizontalDivider()
         if (book.original) Box(Modifier.weight(1f)) { PdfReader(book, model.repository.source(book)) }
-        else key(book.original) {
-            val list = rememberLazyListState(initialFirstVisibleItemIndex = book.position)
-            LaunchedEffect(list) {
-                snapshotFlow { list.firstVisibleItemIndex }.distinctUntilChanged().collect { model.position(it) }
-            }
-            LazyColumn(state = list, modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(horizontal = 28.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                items(state.passages.size) { index ->
-                    Text(state.passages[index].text, fontFamily = if (state.settings.serif) FontFamily.Serif else FontFamily.SansSerif,
-                        fontSize = state.settings.size.sp, lineHeight = (state.settings.size * 1.65f).sp)
-                }
-                item { Column(Modifier.fillMaxWidth().padding(vertical = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Você chegou ao fim.", fontFamily = FontFamily.Serif, fontSize = 24.sp)
-                    TextButton(onClick = model::finish) { Text(if (book.finished) "Leitura concluída ✓" else "Marcar como concluído") }
-                } }
-            }
-        }
+        else TextReader(state, model, Modifier.weight(1f))
         HorizontalDivider()
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             if (book.original) {
@@ -166,7 +150,16 @@ class MainActivity : ComponentActivity() {
         }
     }
     if (preferences) AlertDialog(onDismissRequest = { preferences = false }, title = { Text("Do seu jeito", fontFamily = FontFamily.Serif) }, text = {
-        Column {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            Text("Forma de leitura")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = state.settings.mode == ReadingMode.SCROLL,
+                    onClick = { model.settings(state.settings.copy(mode = ReadingMode.SCROLL)) }, label = { Text("Rolagem") })
+                FilterChip(selected = state.settings.mode == ReadingMode.PAGED,
+                    onClick = { model.settings(state.settings.copy(mode = ReadingMode.PAGED)) }, label = { Text("Páginas") })
+            }
+            Text("No modo de texto, passe as páginas para os lados ou role para baixo.", style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(16.dp))
             Text("Aparência")
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { listOf("Claro", "Sépia", "Escuro").forEach { theme ->
                 FilterChip(selected = state.settings.theme == theme, onClick = { model.settings(state.settings.copy(theme = theme)) }, label = { Text(theme) })

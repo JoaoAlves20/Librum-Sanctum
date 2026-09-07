@@ -14,12 +14,18 @@ data class Book(
     val original: Boolean = false,
     val lastRead: Long = 0,
     val finished: Boolean = false,
+    val positionOffset: Int = 0,
 ) {
     val progress: Float get() = if (finished) 1f else if (original || passages == 0)
         pdfPage.toFloat() / pages.coerceAtLeast(1) else position.toFloat() / passages.coerceAtLeast(1)
 }
 
-data class ReadingSettings(val theme: String = "Sépia", val size: Float = 20f, val serif: Boolean = true)
+enum class ReadingMode { SCROLL, PAGED }
+
+data class ReadingSettings(
+    val theme: String = "Sépia", val size: Float = 20f, val serif: Boolean = true,
+    val mode: ReadingMode = ReadingMode.SCROLL,
+)
 
 fun splitPassages(text: String, page: Int = 0): List<Passage> =
     text.replace("\r", "").split(Regex("\n\\s*\n"))
