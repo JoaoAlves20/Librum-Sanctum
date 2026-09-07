@@ -2,7 +2,7 @@
 
 Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, servidor, anúncios ou permissão de internet.
 
-## Versão 0.2.0
+## Versão 0.2.1
 
 - Importa PDF e EPUB pelo seletor de arquivos e mantém uma cópia privada no aparelho.
 - Estante com busca, capas tipográficas, último livro aberto, percentual e botão de continuar.
@@ -11,6 +11,7 @@ Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, s
 - PDF original renderizado no aparelho, com páginas, zoom e arraste.
 - Posição independente por livro, preferências persistidas e identificação de duplicatas pelo conteúdo.
 - EPUB segue a ordem de leitura do `spine`, não a ordem dos arquivos no ZIP.
+- Ícone adaptativo com fundo verde, compatível com os formatos e ícones temáticos do Android.
 
 ## Executar
 
