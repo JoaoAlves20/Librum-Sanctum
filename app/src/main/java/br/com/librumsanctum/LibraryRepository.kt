@@ -20,7 +20,8 @@ class LibraryRepository(private val context: Context) {
         if (!index.baseFile.exists() && !File(root, "index.json.bak").exists()) return emptyList()
         val array = JSONArray(index.openRead().bufferedReader().use { it.readText() })
         return (0 until array.length()).map { i -> array.getJSONObject(i).let {
-            Book(it.getString("id"), it.getString("title"), it.getString("author"), it.getString("format"),
+            val names = BookNameFormatter.resolve(it.getString("title"), it.getString("author"))
+            Book(it.getString("id"), names.title, names.author, it.getString("format"),
                 it.getInt("passages"), it.getInt("pages"), it.optInt("position"), it.optInt("pdfPage"),
                 it.optBoolean("original"), it.optLong("lastRead"), it.optBoolean("finished"), it.optInt("positionOffset"))
         } }
@@ -53,7 +54,7 @@ class LibraryRepository(private val context: Context) {
     fun import(uri: Uri): Book {
         val name = context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
             if (it.moveToFirst()) it.getString(0) else null
-        } ?: "Livro"
+        } ?: uri.lastPathSegment?.substringAfterLast('\\') ?: "Livro"
         val temp = File.createTempFile("import-", ".tmp", root)
         try {
             val digest = MessageDigest.getInstance("SHA-256")
@@ -81,7 +82,8 @@ class LibraryRepository(private val context: Context) {
                 ParsedBook(pdf.documentInformation.title.orEmpty().ifBlank { name.substringBeforeLast('.') },
                     pdf.documentInformation.author.orEmpty().ifBlank { "Autor desconhecido" }, text, pdf.numberOfPages)
             }
-            val book = Book(id, parsed.title.ifBlank { name.substringBeforeLast('.') }, parsed.author, format, parsed.passages.size, parsed.pages, original = parsed.passages.isEmpty())
+            val names = BookNameFormatter.resolve(parsed.title.ifBlank { name.substringBeforeLast('.') }, parsed.author)
+            val book = Book(id, names.title, names.author, format, parsed.passages.size, parsed.pages, original = parsed.passages.isEmpty())
             temp.copyTo(source(book), overwrite = true)
             File(root, "$id.json").writeText(JSONArray().apply { parsed.passages.forEach { put(JSONObject().put("text", it.text).put("page", it.sourcePage)) } }.toString())
             save(book)

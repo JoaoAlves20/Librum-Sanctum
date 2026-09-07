@@ -82,6 +82,32 @@ class LibraryRepositoryTest {
         assertTrue(repository.source(book).exists())
         assertEquals(1, repository.books().size)
     }
+    @Test fun recognizesAuthorFromRealPdfFilename() {
+        val source = pdf(true).copyTo(File(context.cacheDir, "o-velho-e-o-mar-ernest-hemingway.pdf"), overwrite = true)
+        val book = repository.import(Uri.fromFile(source))
+        assertEquals("O Velho e o Mar", book.title)
+        assertEquals("Ernest Hemingway", book.author)
+    }
+    @Test fun prefersPdfMetadataOverFilename() {
+        val source = pdf(true)
+        PDDocument.load(source).use { document ->
+            document.documentInformation.title = "orgulho e preconceito"
+            document.documentInformation.author = "jane austen"
+            document.save(File(context.cacheDir, "o-velho-e-o-mar-ernest-hemingway.pdf"))
+        }
+        val book = repository.import(Uri.fromFile(File(context.cacheDir, "o-velho-e-o-mar-ernest-hemingway.pdf")))
+        assertEquals("Orgulho e Preconceito", book.title)
+        assertEquals("Jane Austen", book.author)
+    }
+    @Test fun cleansExistingBooksWithoutChangingReadingState() {
+        val original = Book("legacy", "o-grande-gatsby-f-scott-fitz-gerald", "Autor desconhecido", "PDF", 100, 50,
+            position = 20, positionOffset = 35, pdfPage = 12, original = true, lastRead = 1234, finished = true)
+        repository.save(original)
+        val expected = original.copy(title = "O Grande Gatsby", author = "F. Scott Fitzgerald")
+        assertEquals(expected, LibraryRepository(context).books().single())
+        repository.save(expected)
+        assertEquals(expected, LibraryRepository(context).books().single())
+    }
     @Test fun imageOnlyPdfUsesOriginalReader() {
         val book = repository.import(Uri.fromFile(pdf(false)))
         assertTrue(book.original); assertEquals(0, book.passages); assertEquals(1, book.pages)

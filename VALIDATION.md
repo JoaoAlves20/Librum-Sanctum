@@ -1,4 +1,17 @@
-# Validação da versão 0.2.0
+# Validação da versão 0.3.0
+
+Executada em 7 de setembro de 2026.
+
+- **36 testes aprovados**, sem falhas: 9 de formatação, 10 do repositório, 6 de EPUB, 4 de interface, 6 de paginação e 1 de medidas reais.
+- Os novos testes verificam os exemplos de Hemingway e Fitzgerald, maiúsculas/minúsculas, metadados prioritários, autores desconhecidos, nomes ambíguos e aplicação repetida da formatação.
+- Importação de PDFs reais validada com nome de arquivo e com título/autor nos metadados. Biblioteca existente conserva ID, posição, deslocamento, página PDF, modo original, última leitura e conclusão.
+- O primeiro teste revelou um caminho Windows inteiro no fallback de nome; o tratamento foi corrigido e os 36 testes passaram na repetição.
+- Lint concluído sem erros. A compilação incremental encontrou um cache bloqueado pelo Windows; após remover somente esse cache, `assembleDebug` terminou com **BUILD SUCCESSFUL**.
+- APK verificado: `versionCode=4`, `versionName=0.3.0`, assinatura SHA-256 `d1fcdcac54732c328bfdcc359031fb9b948d2dd8e8060aea14ae922b1dead053`, igual à versão local anterior.
+
+Validação automatizada com Robolectric API 28, sem aparelho físico. O reconhecimento usa metadados e uma lista local limitada de autores; não identifica universalmente autores a partir de nomes de arquivo.
+
+# Histórico: validação da versão 0.2.0
 
 Executada em 7 de setembro de 2026, com o mesmo ambiente Android/JDK descrito abaixo.
 

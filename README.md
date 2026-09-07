@@ -2,7 +2,7 @@
 
 Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, servidor, anúncios ou permissão de internet.
 
-## Versão 0.2.1
+## Versão 0.3.0
 
 - Importa PDF e EPUB pelo seletor de arquivos e mantém uma cópia privada no aparelho.
 - Estante com busca, capas tipográficas, último livro aberto, percentual e botão de continuar.
@@ -12,6 +12,9 @@ Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, s
 - Posição independente por livro, preferências persistidas e identificação de duplicatas pelo conteúdo.
 - EPUB segue a ordem de leitura do `spine`, não a ordem dos arquivos no ZIP.
 - Ícone adaptativo com fundo verde, compatível com os formatos e ícones temáticos do Android.
+- Formatação automática de títulos e autores, inclusive nos livros já importados, sem perder o progresso. `orgulho e preconceito` aparece como **Orgulho e Preconceito**; os nomes de arquivo dos exemplos de Hemingway e Fitzgerald são separados em título e autor.
+
+A identificação funciona offline: prioriza os metadados do PDF/EPUB e reconhece um pequeno catálogo local de autores no final do título. Não identifica qualquer autor pelo nome do arquivo nem consulta a internet; nomes desconhecidos ou ambíguos permanecem no título, com autor desconhecido quando não há metadados. A formatação não acrescenta acentos ausentes.
 
 ## Executar
 
