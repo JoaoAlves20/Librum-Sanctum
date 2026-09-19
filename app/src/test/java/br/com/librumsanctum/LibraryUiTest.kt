@@ -117,6 +117,22 @@ class LibraryUiTest {
         org.junit.Assert.assertTrue(model.state.value.selected!!.finished)
         compose.onNodeWithText("100% lido").assertIsDisplayed()
     }
+    @Test fun paragraphsAndDialogueHaveSeparateVisualBlocksInBothModes() {
+        val passages = splitPassages("A porta se abriu.\n\n— Quem está aí?\n— Sou eu.\n\nEla voltou ao livro.")
+        openFixture(passages)
+        fun verifyBlocks() {
+            val nodes = passages.map { compose.onNodeWithText(it.text).assertIsDisplayed().fetchSemanticsNode() }
+            nodes.zipWithNext().forEach { (first, second) ->
+                org.junit.Assert.assertTrue("Os parágrafos precisam de espaço entre blocos", second.boundsInRoot.top > first.boundsInRoot.bottom)
+            }
+        }
+        verifyBlocks()
+        screenshot("paragraphs-scroll")
+        chooseMode("Páginas")
+        awaitPager()
+        verifyBlocks()
+        screenshot("paragraphs-paged")
+    }
     private fun openFixture(passages: List<Passage>): LibraryViewModel {
         val repository = LibraryRepository(application)
         repository.save(Book("pages", "Entre páginas e memórias", "Biblioteca de teste", "EPUB", passages.size, 0))

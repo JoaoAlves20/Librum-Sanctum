@@ -36,8 +36,8 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         mutable.value = mutable.value.copy(books = repository.books())
     }
     fun open(book: Book) = work {
-        val content = repository.passages(book)
-        val opened = book.copy(lastRead = System.currentTimeMillis())
+        val (prepared, content) = repository.prepare(book)
+        val opened = prepared.copy(lastRead = System.currentTimeMillis())
         repository.save(opened)
         mutable.value = mutable.value.copy(selected = opened, passages = content, books = repository.books())
     }

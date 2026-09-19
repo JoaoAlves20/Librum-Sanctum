@@ -33,12 +33,21 @@ class EpubParserTest {
     @Test fun rejectsEncryptedBooks() {
         assertThrows(IllegalArgumentException::class.java) { EpubParser.parse(epub(entries() + ("META-INF/encryption.xml" to "<encryption/>"))) }
     }
-    @Test fun boundsLongParagraphsWithoutLosingWords() {
+    @Test fun preservesLongParagraphWithoutArtificialBreaks() {
         val source = (1..200).joinToString(" ") { "palavra$it" }
         val passages = splitPassages(source, 7)
-        assertEquals(4, passages.size)
+        assertEquals(1, passages.size)
         assertEquals(source, passages.joinToString(" ") { it.text })
         assertTrue(passages.all { it.sourcePage == 7 })
+    }
+    @Test fun preservesNestedParagraphsBreaksAndLooseTextInReadingOrder() {
+        val chapter = """<body>Introdução.<blockquote><p>Primeiro <em>parágrafo</em>.</p><p>Segundo.</p></blockquote><div>— Olá!<br/>— Tudo bem?</div><p>Fim.</p></body>"""
+        val parsed = EpubParser.parse(epub(entries() + ("OPS/text/one.xhtml" to chapter)))
+        assertEquals(listOf("Introdução.", "Primeiro parágrafo.", "Segundo.", "— Olá!", "— Tudo bem?", "Fim.", "Segundo"), parsed.passages.map { it.text })
+    }
+    @Test fun distinguishesWrappedLinesDialogueAndParagraphs() {
+        val source = "Um parágrafo que continua\nna linha seguinte — sem separar o inciso.\n— Olá!\n— Tudo bem?\n\nOutro parágrafo."
+        assertEquals(listOf("Um parágrafo que continua na linha seguinte — sem separar o inciso.", "— Olá!", "— Tudo bem?", "Outro parágrafo."), splitPassages(source).map { it.text })
     }
     @Test fun progressIsBoundedForEmptyAndCompletedBooks() {
         assertEquals(0f, Book("a", "A", "B", "EPUB", 0, 0).progress)

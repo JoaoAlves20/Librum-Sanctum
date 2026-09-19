@@ -37,10 +37,22 @@ object EpubParser {
             val item = manifest[ref.attr("idref")] ?: error("Capítulo ausente no manifesto.")
             val doc = Jsoup.parse(read(resolve(packagePath, item.attr("href"))))
             doc.select("script, style, nav").remove()
-            val blocks = doc.select("h1, h2, h3, h4, p, li, blockquote, pre").filter { element ->
-                element.parents().none { it.tagName() in setOf("p", "li", "blockquote", "pre") }
+            // Traverse once: selecting parent blocks used to flatten nested paragraphs,
+            // while selecting only paragraphs omitted text directly inside div/body.
+            val text = StringBuilder()
+            fun visit(node: org.jsoup.nodes.Node) {
+                when (node) {
+                    is org.jsoup.nodes.TextNode -> text.append(node.wholeText.replace(Regex("\\s+"), " "))
+                    is org.jsoup.nodes.Element -> {
+                        val boundary = node.isBlock || node.tagName() == "br"
+                        if (boundary) text.append("\n\n")
+                        node.childNodes().forEach(::visit)
+                        if (boundary) text.append("\n\n")
+                    }
+                }
             }
-            if (blocks.isEmpty()) splitPassages(doc.body().text()) else blocks.flatMap { splitPassages(it.text()) }
+            visit(doc.body())
+            splitPassages(text.toString())
         }
         require(passages.isNotEmpty()) { "Nenhum texto legível encontrado no EPUB." }
         ParsedBook(opf.getElementsByTag("dc:title").text(),

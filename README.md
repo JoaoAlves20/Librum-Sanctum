@@ -2,7 +2,7 @@
 
 Biblioteca pessoal para Android, offline desde a primeira abertura. Sem conta, servidor, anúncios ou permissão de internet.
 
-## Versão 0.3.0
+## Versão 0.4.0
 
 - Importa PDF e EPUB pelo seletor de arquivos e mantém uma cópia privada no aparelho.
 - Estante com busca, capas tipográficas, último livro aberto, percentual e botão de continuar.
@@ -30,12 +30,15 @@ No Windows, use `gradlew.bat`. O APK de desenvolvimento será gerado em `app/bui
 
 Kotlin e Jetpack Compose para a interface; `LibraryViewModel` coordena estado e tarefas de disco; `LibraryRepository` mantém os arquivos e um índice JSON com escrita atômica. PDFBox Android extrai texto, `PdfRenderer` exibe o original, e Jsoup interpreta o conteúdo EPUB. Não há serviços externos em tempo de execução.
 
-O texto importado é dividido em trechos de até 65 palavras. A retomada guarda o trecho e a posição do caractere visível, sem depender do número de uma página. Em rolagem, o leitor retoma a linha que contém esse ponto; no modo paginado, abre a página que o contém. Alterar fonte, tela ou modo recalcula a disposição e preserva essa referência. As páginas são medidas com a mesma fonte e largura usadas para exibir o texto, com divisão de trechos longos entre páginas. O percentual acompanha os trechos ou páginas originais ultrapassados; o botão de conclusão registra 100%. Alternar entre texto e PDF original aproxima a posição pela página de origem.
+O texto importado preserva parágrafos e falas em blocos separados, sem cortes artificiais a cada 65 palavras. EPUB mantém blocos aninhados e quebras explícitas; PDF usa recuos/espaçamento detectados e falas iniciadas por travessão em nova linha. A retomada guarda o trecho e a posição do caractere visível, sem depender do número de uma página. Em rolagem, o leitor retoma a linha que contém esse ponto; no modo paginado, abre a página que o contém. Alterar fonte, tela ou modo recalcula a disposição e preserva essa referência. As páginas são medidas com a mesma fonte e largura usadas para exibir o texto, com divisão de trechos longos entre páginas. O percentual acompanha os trechos ou páginas originais ultrapassados; o botão de conclusão registra 100%. Alternar entre texto e PDF original aproxima a posição pela página de origem.
 
 O modo escolhido fica salvo no aparelho. A biblioteca da versão 0.1.0 é compatível: livros antigos começam com deslocamento zero dentro do trecho já salvo. Para atualizar, instale o novo APK por cima do anterior, usando a mesma assinatura; não desinstale o app.
 
+Ao abrir um livro importado em versões anteriores, o app refaz a extração da cópia privada e migra a posição por contagem de caracteres sem espaços (por página no PDF). Os arquivos originais e a conclusão da leitura são preservados. Se a nova extração recuperar texto que antes era omitido, a retomada pode ficar aproximada.
+
 ## Limites conhecidos
 
+- A estrutura de parágrafos de PDF é inferida pela diagramação; arquivos sem recuos ou espaçamento claros podem exigir o modo original. Não é possível garantir a separação de todas as falas em qualquer PDF.
 - PDFs escaneados ficam disponíveis no modo original; esta versão não faz OCR.
 - O texto reformata o conteúdo: imagens, tabelas, notas e diagramação complexa não são preservadas nesse modo. PDFs em múltiplas colunas podem ter ordem de extração imperfeita; use o original nesses casos.
 - Sem suporte a DRM ou senha. EPUB com declaração de criptografia (inclusive fontes ofuscadas) é recusado nesta versão.

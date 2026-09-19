@@ -15,6 +15,7 @@ data class Book(
     val lastRead: Long = 0,
     val finished: Boolean = false,
     val positionOffset: Int = 0,
+    val textVersion: Int = 0,
 ) {
     val progress: Float get() = if (finished) 1f else if (original || passages == 0)
         pdfPage.toFloat() / pages.coerceAtLeast(1) else position.toFloat() / passages.coerceAtLeast(1)
@@ -28,8 +29,7 @@ data class ReadingSettings(
 )
 
 fun splitPassages(text: String, page: Int = 0): List<Passage> =
-    text.replace("\r", "").split(Regex("\n\\s*\n"))
-        .flatMap { paragraph ->
-            val words = paragraph.replace(Regex("\\s+"), " ").trim().split(' ').filter { it.isNotBlank() }
-            words.chunked(65).map { Passage(it.joinToString(" "), page) }
-        }
+    text.replace("\r\n", "\n").replace('\r', '\n').replace('\u00a0', ' ')
+        .split(Regex("\n\\s*\n|\n(?=\\s*[—–-]\\s*\\p{L})"))
+        .map { it.replace(Regex("\\s+"), " ").trim() }
+        .filter { it.isNotEmpty() }.map { Passage(it, page) }

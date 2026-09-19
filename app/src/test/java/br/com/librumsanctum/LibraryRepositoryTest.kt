@@ -112,6 +112,36 @@ class LibraryRepositoryTest {
         val book = repository.import(Uri.fromFile(pdf(false)))
         assertTrue(book.original); assertEquals(0, book.passages); assertEquals(1, book.pages)
     }
+    @Test fun realPdfRetainsParagraphsAndDialogueAndMigratesOldCache() {
+        val source = File(context.cacheDir, "dialogue.pdf")
+        PDDocument().use { document ->
+            val page = PDPage(); document.addPage(page)
+            PDPageContentStream(document, page).use { stream ->
+                stream.beginText(); stream.setFont(PDType1Font.HELVETICA, 14f)
+                stream.newLineAtOffset(40f, 700f)
+                stream.showText("Primeiro paragrafo.")
+                stream.newLineAtOffset(0f, -36f); stream.showText("Segundo paragrafo.")
+                stream.newLineAtOffset(0f, -18f); stream.showText("— Ola!")
+                stream.newLineAtOffset(0f, -18f); stream.showText("— Tudo bem?")
+                stream.endText()
+            }
+            document.save(source)
+        }
+        val book = repository.import(Uri.fromFile(source))
+        val expected = listOf("Primeiro paragrafo.", "Segundo paragrafo.", "— Ola!", "— Tudo bem?")
+        assertEquals(expected, repository.passages(book).map { it.text })
+        val flattened = expected.joinToString(" ")
+        val legacy = book.copy(textVersion = 0, passages = 1, positionOffset = flattened.indexOf("Tudo"), lastRead = 42)
+        File(context.filesDir, "library/${book.id}.json").writeText(org.json.JSONArray().put(
+            org.json.JSONObject().put("text", flattened).put("page", 0)).toString())
+        repository.save(legacy)
+        val (migrated, content) = repository.prepare(legacy)
+        assertEquals(expected, content.map { it.text })
+        assertEquals(3, migrated.position); assertEquals(2, migrated.positionOffset)
+        assertEquals(42L, migrated.lastRead); assertEquals(book.id, migrated.id)
+        assertEquals(migrated to content, LibraryRepository(context).prepare(migrated))
+        assertArrayEquals(source.readBytes(), repository.source(migrated).readBytes())
+    }
     @Test fun invalidImportDoesNotChangeLibraryOrLeaveTempFiles() {
         val invalid = File(context.cacheDir, "invalid.pdf").apply { writeText("not a pdf") }
         assertThrows(IllegalStateException::class.java) { repository.import(Uri.fromFile(invalid)) }
