@@ -1,4 +1,17 @@
-# Validação da versão 0.3.0
+# Validação da versão 0.4.0
+
+Executada em 19 de setembro de 2026. GitHub Actions, execução 35465103162, código 38f1849: `testDebugUnitTest lintDebug assembleDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **43 testes aprovados**, 0 falhas e 0 ignorados. Incluem PDF real com espaçamento de parágrafos e falas, EPUB com parágrafos aninhados, `br`, texto fora de `p` e ordem de leitura.
+- Parágrafos longos não são mais cortados a cada 65 palavras. Quebras de linha tipográficas são reunidas; falas iniciadas por travessão em nova linha são separadas, preservando travessões internos.
+- Migração testada: reextração da cópia local, posição dentro de uma fala, limites de página PDF, identidade do livro, última leitura, preservação do arquivo fonte e reabertura sem nova migração. O cache novo é escrito atomicamente antes da atualização do índice, mantendo o cache anterior.
+- Teste Compose confere blocos distintos e espaçamento em rolagem e páginas. Capturas `paragraphs-scroll.png` e `paragraphs-paged.png` do CI foram inspecionadas visualmente.
+- Lint e compilação passaram no CI. A primeira execução remota falhou na instalação do pacote Android `tools`; o workflow foi corrigido para instalar os pacotes efetivamente utilizados.
+- O APK do CI foi baixado e reassinado localmente com a chave anterior. Verificado por `apksigner`: SHA-256 `d1fcdcac54732c328bfdcc359031fb9b948d2dd8e8060aea14ae922b1dead053`. `aapt` confirmou versão 0.4.0, código 5. Arquivo de atualização: `app/build/outputs/apk/update/Librum-Sanctum-0.4.0.apk`.
+
+Testes gráficos em Robolectric API 28, sem aparelho físico. PDFs dependem da diagramação detectável; não há OCR. A migração da posição é aproximada se a nova extração recuperar conteúdo que a versão antiga omitia. O ambiente local foi reinstalado; os resultados acima se referem à execução concluída no CI.
+
+# Histórico: validação da versão 0.3.0
 
 Executada em 7 de setembro de 2026.
 
